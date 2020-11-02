@@ -7,6 +7,9 @@ import TodoList from './components/TodoList'
 import AddForm from './components/AddForm'
 import TodoDetail from './components/TodoDetail'
 import EditForm from './components/EditForm'
+import SignIn from './components/SignIn'
+import SignUp from './components/SignUp'
+
 
 class App extends Component {
 
@@ -82,11 +85,26 @@ class App extends Component {
     })
   }
 
+  handleSignUp = () => {
+    //signup code here
+  }
+
+  handleSignUp = () => {
+    //signup code here
+  }
+
+  handleSignIn = () => {
+    //signin code here
+  }
+
+  handleLogOut = (e) => {
+    //logout code here
+  }
+
   render() {
-    console.log(this.props)
     return (
       <div>   
-        <Nav />
+        <Nav onLogout={this.handleLogOut} />
         <h3>Shopping List</h3>
         <Switch>
             <Route exact path="/" render={() => {
@@ -103,6 +121,12 @@ class App extends Component {
             <Route path="/todo/:todoId/edit" render={(routeProps) => {
               return <EditForm onEdit={this.handleEdit} {...routeProps} />
             }} />
+               <Route path="/sign-in" render={(routeProps) => {
+            return <SignIn onSignIn={this.handleSignIn} {...routeProps} />
+          }}/>
+          <Route path="/sign-up" render={(routeProps) => {
+            return <SignUp onSignUp={this.handleSignUp} {...routeProps} />
+          }}/>
         </Switch>
       </div>
     )
