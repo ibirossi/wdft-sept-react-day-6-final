@@ -89,9 +89,6 @@ class App extends Component {
     //signup code here
   }
 
-  handleSignUp = () => {
-    //signup code here
-  }
 
   handleSignIn = () => {
     //signin code here
