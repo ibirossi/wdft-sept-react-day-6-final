@@ -29,22 +29,34 @@ class App extends Component {
 
   handleAdd = (e) => {
     e.preventDefault()
-    const {name, description} = e.target
+    const {name, description, image} = e.target
+    let imageFile = image.files[0]
 
-    let newTodo = {
-      name: name.value,
-      description: description.value,
-      completed: false,
-    }
+    let uploadForm = new FormData()
+    uploadForm.append('imageUrl', imageFile)
 
-    axios.post('http://localhost:5000/api/create', newTodo)
-    .then((response) =>{
-        this.setState({
-          todos: [ response.data , ...this.state.todos]
-        }, () => {
-          this.props.history.push('/')
-        })      
-    })
+    axios.post('http://localhost:5000/api/upload', uploadForm)
+      .then((response) => {
+
+          let newTodo = {
+            name: name.value,
+            description: description.value,
+            completed: false,
+            image: response.data.image
+          }
+      
+          axios.post('http://localhost:5000/api/create', newTodo)
+          .then((response) =>{
+              this.setState({
+                todos: [ response.data , ...this.state.todos]
+              }, () => {
+                this.props.history.push('/')
+              })      
+          })
+      })
+
+
+  
   }
 
   handleDelete = (todoId) => {

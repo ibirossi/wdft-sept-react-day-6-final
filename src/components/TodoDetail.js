@@ -24,11 +24,12 @@ class TodoDetail extends Component {
 
 
     render() {
-        const {name, description, _id} = this.state.todo
+        const {name, description, _id, image} = this.state.todo
         return (
             <div>
                 <div>Name: {name}</div>
                 <div>Detail: {description}</div>
+                <img src={image} alt={name}/>
                 <Link to={`/todo/${_id}/edit`} ><button>Edit</button></Link>
                 <button onClick={() => { this.props.onDelete(_id) } }>Delete</button>
             </div>
