@@ -14,10 +14,20 @@ import SignUp from './components/SignUp'
 class App extends Component {
 
   state = {
-    todos: []
+    todos: [],
+    loggedInUser: null,
   }
 
   componentDidMount() {
+    if (!this.state.loggedInUser) {
+      axios.get('http://localhost:5000/api/user', {withCredentials: true})
+        .then((response) => {
+            this.setState({
+              loggedInUser: response.data
+            })
+        })
+    }
+
     axios.get('http://localhost:5000/api/todos')
       .then((response) => {
         // response.data
@@ -97,24 +107,65 @@ class App extends Component {
     })
   }
 
-  handleSignUp = () => {
-    //signup code here
+  handleSignUp = (e) => {
+    e.preventDefault()
+    const {username, email, password} = e.target
+
+    axios.post(`http://localhost:5000/api/signup` , {
+      username: username.value, 
+      email: email.value, 
+      password: password.value
+    }, {withCredentials: true})
+    .then((response) => {
+      this.setState({
+        loggedInUser: response.data
+      }, () => {
+        this.props.history.push('/')
+      })
+    })
+
+
   }
 
 
-  handleSignIn = () => {
-    //signin code here
+  handleSignIn = (e) => {
+    e.preventDefault()
+    e.preventDefault()
+    const {email, password} = e.target
+
+    axios.post(`http://localhost:5000/api/signin` , {
+      email: email.value, 
+      password: password.value
+    }, {withCredentials: true})
+    .then((response) => {
+      this.setState({
+        loggedInUser: response.data
+      }, () => {
+        this.props.history.push('/')
+      })
+    })
+
   }
 
   handleLogOut = (e) => {
-    //logout code here
+    axios.post('http://localhost:5000/api/logout', {}, {withCredentials: true})
+      .then(() => {
+          this.setState({
+            loggedInUser: null
+          })
+      })
   }
 
   render() {
+    const {loggedInUser} = this.state
+
     return (
       <div>   
         <Nav onLogout={this.handleLogOut} />
         <h3>Shopping List</h3>
+        {
+          loggedInUser ? (<h5>User is: {loggedInUser.username}</h5>) : null
+        }
         <Switch>
             <Route exact path="/" render={() => {
               return <TodoList todos={this.state.todos} />
