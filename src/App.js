@@ -9,6 +9,7 @@ import TodoDetail from './components/TodoDetail'
 import EditForm from './components/EditForm'
 import SignIn from './components/SignIn'
 import SignUp from './components/SignUp'
+import {API_URL} from './config'
 
 
 class App extends Component {
@@ -16,11 +17,12 @@ class App extends Component {
   state = {
     todos: [],
     loggedInUser: null,
+    errorMessage: null,
   }
 
   componentDidMount() {
     if (!this.state.loggedInUser) {
-      axios.get('http://localhost:5000/api/user', {withCredentials: true})
+      axios.get(`${API_URL}/user`, {withCredentials: true})
         .then((response) => {
             this.setState({
               loggedInUser: response.data
@@ -28,7 +30,7 @@ class App extends Component {
         })
     }
 
-    axios.get('http://localhost:5000/api/todos')
+    axios.get(`${API_URL}/todos`)
       .then((response) => {
         // response.data
         this.setState({
@@ -45,7 +47,7 @@ class App extends Component {
     let uploadForm = new FormData()
     uploadForm.append('imageUrl', imageFile)
 
-    axios.post('http://localhost:5000/api/upload', uploadForm)
+    axios.post(`${API_URL}/upload`, uploadForm)
       .then((response) => {
 
           let newTodo = {
@@ -55,7 +57,7 @@ class App extends Component {
             image: response.data.image
           }
       
-          axios.post('http://localhost:5000/api/create', newTodo)
+          axios.post(`${API_URL}/create`, newTodo)
           .then((response) =>{
               this.setState({
                 todos: [ response.data , ...this.state.todos]
@@ -65,12 +67,10 @@ class App extends Component {
           })
       })
 
-
-  
   }
 
   handleDelete = (todoId) => {
-    axios.delete(`http://localhost:5000/api/todos/${todoId}`)
+    axios.delete(`${API_URL}/todos/${todoId}`)
       .then(() => {
           let filteredTodos = this.state.todos.filter((todo) => {
               return todo._id !== todoId
@@ -86,7 +86,7 @@ class App extends Component {
   }
 
   handleEdit = (todo) => {
-    axios.patch(`http://localhost:5000/api/todos/${todo._id}`, {
+    axios.patch(`${API_URL}/todos/${todo._id}`, {
       name: todo.name,
       description: todo.description,
       completed: todo.completed
@@ -111,7 +111,7 @@ class App extends Component {
     e.preventDefault()
     const {username, email, password} = e.target
 
-    axios.post(`http://localhost:5000/api/signup` , {
+    axios.post(`${API_URL}/signup` , {
       username: username.value, 
       email: email.value, 
       password: password.value
@@ -133,22 +133,26 @@ class App extends Component {
     e.preventDefault()
     const {email, password} = e.target
 
-    axios.post(`http://localhost:5000/api/signin` , {
+    axios.post(`${API_URL}/signin` , {
       email: email.value, 
       password: password.value
     }, {withCredentials: true})
-    .then((response) => {
-      this.setState({
-        loggedInUser: response.data
-      }, () => {
-        this.props.history.push('/')
+      .then((response) => {
+        this.setState({
+          loggedInUser: response.data
+        }, () => {
+          this.props.history.push('/')
+        })
       })
-    })
-
+      .catch((marta) => {
+          this.setState({
+            errorMessage: marta.response.data.error
+          })
+      })
   }
 
   handleLogOut = (e) => {
-    axios.post('http://localhost:5000/api/logout', {}, {withCredentials: true})
+    axios.post(`${API_URL}/logout`, {}, {withCredentials: true})
       .then(() => {
           this.setState({
             loggedInUser: null
@@ -156,12 +160,18 @@ class App extends Component {
       })
   }
 
+  handleUnMount = () => {
+    this.setState({
+      errorMessage: null
+    })
+  }
+
   render() {
-    const {loggedInUser} = this.state
+    const {loggedInUser, errorMessage} = this.state
 
     return (
       <div>   
-        <Nav onLogout={this.handleLogOut} />
+        <Nav loggedInUser={loggedInUser} onLogout={this.handleLogOut} />
         <h3>Shopping List</h3>
         {
           loggedInUser ? (<h5>User is: {loggedInUser.username}</h5>) : null
@@ -172,17 +182,17 @@ class App extends Component {
             }} />
             {/* <Route path="/" component={AddForm} /> */}
             <Route path="/add-form" render={() => {
-              return <AddForm onAdd={this.handleAdd} />
+              return <AddForm  loggedInUser={loggedInUser} onAdd={this.handleAdd} />
             }} />
             {/* <Route path="/todo/:todoId" component={TodoDetail}/> */}
             <Route exact path="/todo/:todoId" render={(routeProps) => {
-              return <TodoDetail onDelete={this.handleDelete}  {...routeProps} />
+              return <TodoDetail loggedInUser={loggedInUser}  onDelete={this.handleDelete}  {...routeProps} />
             }} />
             <Route path="/todo/:todoId/edit" render={(routeProps) => {
               return <EditForm onEdit={this.handleEdit} {...routeProps} />
             }} />
                <Route path="/sign-in" render={(routeProps) => {
-            return <SignIn onSignIn={this.handleSignIn} {...routeProps} />
+            return <SignIn onUnmount={this.handleUnMount}  errorMessage={errorMessage}   onSignIn={this.handleSignIn} {...routeProps} />
           }}/>
           <Route path="/sign-up" render={(routeProps) => {
             return <SignUp onSignUp={this.handleSignUp} {...routeProps} />

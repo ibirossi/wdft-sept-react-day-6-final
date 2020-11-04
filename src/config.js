@@ -1,0 +1,1 @@
+export const API_URL = 'https://wdft-sept-final.herokuapp.com/api'

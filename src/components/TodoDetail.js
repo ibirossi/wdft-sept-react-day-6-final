@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import axios from 'axios' 
-import { Link } from 'react-router-dom'
+import { Link, Redirect } from 'react-router-dom'
+import {API_URL} from '../config'
 
 class TodoDetail extends Component {
 
@@ -14,7 +15,7 @@ class TodoDetail extends Component {
        let todoId = this.props.match.params.todoId
        console.log(this.props)
     //    this.props.history.push('/manish.com')
-        axios.get(`http://localhost:5000/api/todos/${todoId}`)
+        axios.get(`${API_URL}/todos/${todoId}`)
             .then((response) => {
                 this.setState({
                     todo: response.data
@@ -25,6 +26,12 @@ class TodoDetail extends Component {
 
     render() {
         const {name, description, _id, image} = this.state.todo
+        const {loggedInUser} = this.props
+
+        if (!loggedInUser) {
+          return <Redirect to={'/sign-in'}  />
+        }
+
         return (
             <div>
                 <div>Name: {name}</div>
